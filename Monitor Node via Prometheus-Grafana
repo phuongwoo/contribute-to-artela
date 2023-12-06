@@ -1,0 +1,82 @@
+1.Install Prometheus
+sudo apt-get install -y prometheus prometheus-node-exporter
+Create prometheus.yml file
+
+cat > $HOME/prometheus.yml << EOF
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+scrape_configs:
+  - job_name: "prometheus"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "avail_node"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["localhost:9615"]
+  - job_name: node
+    static_configs:
+      - targets: ['localhost:9100']
+EOF
+Move prometheus.yml to the correct location
+
+sudo mv $HOME/prometheus.yml /etc/prometheus/prometheus.yml
+Update the file permissions
+
+sudo chmod 644 /etc/prometheus/prometheus.yml
+Ensure Prometheus starts automatically
+
+sudo systemctl enable prometheus.service prometheus-node-exporter.service
+Restart Prometheus to activate latest settings
+
+sudo systemctl restart prometheus.service prometheus-node-exporter.service
+Check the status, ensure Prometheus has started without errors
+
+sudo systemctl status prometheus.service prometheus-node-exporter.service
+2.Install Grafana
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+echo "deb https://packages.grafana.com/oss/deb stable main" > grafana.list
+sudo mv grafana.list /etc/apt/sources.list.d/grafana.list
+sudo apt-get update && sudo apt-get install -y grafana
+Ensure Grafana starts automatically
+
+sudo systemctl enable grafana-server.service
+Start Grafana
+
+sudo systemctl start grafana-server.service
+Check the status, ensure Grafana has started without errors
+
+sudo systemctl status grafana-server.service
+3.Setup Grafana Dashboard
+sudo ufw allow 3000/tcp
+Ensure port 3000 is open, example of adding to ubuntu firewall In your browser navigate to http://<your validators ip address>:3000. The default login username and password is admin/admin
+
+image
+
+You will be asked to reset your password, please write it down or remember the password as you will need it for the next login.
+
+You will need to create a datasource. Navigate to Home->Connections->Data sources
+
+image
+
+Click on Add data source
+
+image
+
+Click on Prometheus
+
+image
+
+Set URL to "localhost:9090", then test and save the connection
+
+image
+
+Navigate back to your home page, on the top right in the menu select Import dashboard
+
+image
